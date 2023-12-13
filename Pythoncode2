@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep  4 09:47:37 2023
+
+@author: admin
+"""
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+class paper1(object):
+    def getdata(self):
+        a=pd.read_csv("newdataforpython.csv")
+        a1=pd.DataFrame(a)
+        global a3,a4,a5
+        a2=a1.to_numpy() 
+        a3=a["CHANNEL0"]
+        a4=a["CHANNEL1"]
+        a5=a["CHANNEL2"]
+        return a3,a4,a5,a2
+    def plotarea(self):
+        #b3=self.leastsqr()
+        plt.figure(1)
+        plt.plot(a3)
+        plt.xlim([5000,5200])
+        plt.figure(2)
+        plt.plot(a4)       
+        plt.xlim([5000,5200])
+        plt.figure(3)
+        plt.plot(a5)
+        plt.xlim([5000,5200])
+        plt.show()
+    def leastsqr(self):
+        global A1,A
+        global A2
+        A=tf.ones(23200,)
+        A1=tf.stack([a5,A],axis=1)
+        A2=tf.stack([a3,A],axis=1)
+        z=np.linalg.inv(np.dot(A1.T,A1))
+        w=np.dot(z,np.dot(a4.T,A2))  
+        return z,w,A1,A2
+    def linreg(self):
+        A=tf.ones(23200,)
+        A1=tf.stack([a5,A],axis=1)
+        A2=tf.stack([a3,A],axis=1)
+        from sklearn.linear_model import RANSACRegressor,LinearRegression
+        ransac=RANSACRegressor(LinearRegression(),max_trials=100,min_samples=100,residual_threshold=5.0,random_state=0)
+        ransac.fit(A2,A1)
+        inlier_mask=ransac.inlier_mask_
+        outlier_mask=np.logical_not(inlier_mask)
+        X1=np.arange(-4,4,0.02)
+        B=tf.ones(400,)
+        X1=tf.stack([X1,B],axis=1)
+        Y1=ransac.predict(X1)
+        plt.figure(4)
+        plt.plot(a3)
+        plt.xlim([5000,5200])
+        hold(True)
+        plt.scatter(A2[inlier_mask],A1[inlier_mask],c='steelblue',edgecolor='white',marker='o',label='inliers')
+        plt.hold(False)
+        plt.figure(5)
+        plt.scatter(A2[outlier_mask],A1[outlier_mask],c='limegreen',edgecolor='white',marker='s',label='outliers')
+        plt.figure(6)
+        plt.scatter(X1,Y1,c='black',lw=2)
+        plt.xlabel('Time instances or samples')
+        plt.ylabel('Amplitude in millivolts')
+        plt.show()
+        
+b1=paper1()
+print(b1.getdata())
+print(a3)
+b1.plotarea()
+b1.linreg()
+print(b1.leastsqr())
+
+
+        
+        
